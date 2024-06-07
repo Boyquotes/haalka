@@ -331,11 +331,9 @@ fn cell(cell_data_option: Mutable<Option<CellData>>, insertable: bool) -> impl E
             )
         }))
         .hovered_sync(hovered.clone())
-        .with_style(|style| {
-            style.width = Val::Px(CELL_WIDTH);
-            style.height = Val::Px(CELL_WIDTH);
-            style.border = UiRect::all(Val::Px(CELL_BORDER_WIDTH));
-        })
+        .width(Val::Px(CELL_WIDTH))
+        .height(Val::Px(CELL_WIDTH))
+        .with_style(|style| style.border = UiRect::all(Val::Px(CELL_BORDER_WIDTH)))
         .background_color_signal(
             hovered.signal()
                 .map_bool(|| CELL_HIGHLIGHT_COLOR.into(), || CELL_BACKGROUND_COLOR.into()),
@@ -353,10 +351,10 @@ fn cell(cell_data_option: Mutable<Option<CellData>>, insertable: bool) -> impl E
                             El::<NodeBundle>::new()
                                 // TODO: global transform isn't populated on spawn
                                 // .with_global_transform(clone!((original_position) move |transform| original_position.set(Some(transform.compute_transform().translation.xy()))))
+                                .height(Val::Px(CELL_WIDTH))
                                 .with_style(|style| {
                                     style.border = UiRect::all(Val::Px(CELL_BORDER_WIDTH));
                                     style.position_type = PositionType::Absolute;
-                                    style.height = Val::Px(CELL_WIDTH);
                                     style.padding = UiRect::horizontal(Val::Px(10.));
                                 })
                                 .update_raw_el(clone!((original_position) move |raw_el| {
@@ -426,9 +424,9 @@ where
     <I as IntoIterator>::IntoIter: std::marker::Send + 'static,
 {
     Grid::<NodeBundle>::new()
+        .width(Val::Percent(100.))
+        .height(Val::Percent(100.))
         .with_style(|style| {
-            style.width = Val::Percent(100.);
-            style.height = Val::Percent(100.);
             style.column_gap = Val::Px(CELL_GAP);
             style.row_gap = Val::Px(CELL_GAP);
         })
@@ -452,10 +450,8 @@ fn camera(mut commands: Commands) {
 
 fn dot() -> impl Element {
     El::<NodeBundle>::new()
-        .with_style(|style| {
-            style.width = Val::Px(CELL_BORDER_WIDTH * 2.);
-            style.height = Val::Px(CELL_BORDER_WIDTH * 2.);
-        })
+        .width(Val::Px(CELL_BORDER_WIDTH * 2.))
+        .height(Val::Px(CELL_BORDER_WIDTH * 2.))
         .background_color(CELL_BACKGROUND_COLOR.into())
 }
 
@@ -479,50 +475,40 @@ fn side_column() -> impl Element {
 fn inventory() -> impl Element {
     El::<NodeBundle>::new()
         .align(Align::center())
-        .with_style(|style| {
-            style.height = Val::Px(INVENTORY_SIZE);
-            style.width = Val::Px(INVENTORY_SIZE);
-        })
+        .height(Val::Px(INVENTORY_SIZE))
+        .width(Val::Px(INVENTORY_SIZE))
         .child(
             Column::<NodeBundle>::new()
-                .with_style(|style| {
-                    style.height = Val::Percent(100.);
-                    style.width = Val::Percent(100.);
-                    style.row_gap = Val::Px(CELL_GAP * 4.);
-                })
+            .height(Val::Percent(100.))
+            .width(Val::Percent(100.))
+                .with_style(|style| style.row_gap = Val::Px(CELL_GAP * 4.))
                 .background_color(INVENTORY_BACKGROUND_COLOR.into())
                 .align_content(Align::center())
                 .item(
                     Row::<NodeBundle>::new()
-                        .with_style(|style| {
-                            style.column_gap = Val::Px(CELL_GAP);
-                            style.width = Val::Percent(100.);
-                        })
+                    .width(Val::Percent(100.))
+                        .with_style(|style| style.column_gap = Val::Px(CELL_GAP))
                         .item(
                             Row::<NodeBundle>::new()
                                 .align_content(Align::center())
+                                .width(Val::Percent(60.))
                                 .with_style(|style| {
                                     style.column_gap = Val::Px(CELL_GAP);
-                                    style.width = Val::Percent(60.);
                                     style.padding = UiRect::horizontal(Val::Px(CELL_GAP * 3.));
                                 })
                                 .item(side_column())
                                 .item(
                                     El::<NodeBundle>::new()
-                                        .with_style(|style| {
-                                            style.height = Val::Px(CELL_WIDTH * 4. + CELL_GAP * 3.);
-                                            style.width = Val::Percent(100.);
-                                        })
+                                        .height(Val::Px(CELL_WIDTH * 4. + CELL_GAP * 3.))
+                                        .width(Val::Percent(100.))
                                         .background_color(Color::BLACK.into()),
                                 )
                                 .item(side_column())
                         )
                         .item(
                             El::<NodeBundle>::new()
-                                .with_style(|style| {
-                                    style.width = Val::Percent(40.);
-                                    style.height = Val::Percent(100.);
-                                })
+                            .width(Val::Percent(40.))
+                            .height(Val::Percent(100.))
                                 .align_content(Align::center())
                                 .child({
                                     let inputs = MutableVec::new_with_values(
@@ -576,7 +562,7 @@ fn inventory() -> impl Element {
                                         .item({
                                             let cell_data_options = inputs.lock_ref().into_iter().cloned().collect::<Vec<_>>();
                                             El::<NodeBundle>::new()
-                                                .with_style(|style| style.width = Val::Px(CELL_WIDTH * 2. + CELL_GAP))
+                                                .width(Val::Px(CELL_WIDTH * 2. + CELL_GAP))
                                                 .child(grid(cell_data_options).align_content(Align::new().center_x()))
                                         })
                                 }),
@@ -584,7 +570,7 @@ fn inventory() -> impl Element {
                 )
                 .item(
                     El::<NodeBundle>::new()
-                        .with_style(|style| style.width = Val::Percent(100.))
+                        .width(Val::Percent(100.))
                         .child(
                             grid((0..27).into_iter().map(|_| bern_cell_data_option(0.5)))
                                 .align_content(Align::new().center_x()),
@@ -606,10 +592,8 @@ static POINTER_POSITION: Lazy<Mutable<(f32, f32)>> = Lazy::new(default);
 
 fn ui_root(world: &mut World) {
     Stack::<NodeBundle>::new()
-        .with_style(|style| {
-            style.width = Val::Percent(100.);
-            style.height = Val::Percent(100.);
-        })
+        .width(Val::Percent(100.))
+        .height(Val::Percent(100.))
         .update_raw_el(|raw_el| {
             raw_el
                 .insert(On::<Pointer<Move>>::run(|move_: Listener<Pointer<Move>>| {
@@ -631,11 +615,9 @@ fn ui_root(world: &mut World) {
                 .map(Option::flatten)
                 .map_some(move |cell_data| {
                     icon(cell_data.index.signal(), cell_data.count.signal())
-                        .with_style(move |style| {
-                            style.position_type = PositionType::Absolute;
-                            style.width = Val::Px(CELL_WIDTH);
-                            style.height = Val::Px(CELL_WIDTH);
-                        })
+                        .width(Val::Px(CELL_WIDTH))
+                        .height(Val::Px(CELL_WIDTH))
+                        .with_style(move |style| style.position_type = PositionType::Absolute)
                         .z_index(ZIndex::Global(1))
                         .on_signal_with_style(POINTER_POSITION.signal(), move |style, pointer_position| {
                             style.left = Val::Px(pointer_position.0 - CELL_WIDTH / 2.);

@@ -15,6 +15,12 @@ use strum::{self, IntoEnumIterator};
 
 fn main() {
     let selected_shape = Mutable::new(Shape::Cuboid);
+    let font_bytes: &[u8] = include_bytes!("../assets/fonts/VictorMono-Regular.ttf");
+    // let font_config = CosmicFontConfig {
+    //     fonts_dir_path: None,
+    //     font_bytes: Some(vec![font_bytes]),
+    //     load_system_fonts: true,
+    // };
     App::new()
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
@@ -86,11 +92,9 @@ fn button(shape: Shape, selected_shape: Mutable<Shape>, hovered: Mutable<bool>) 
             .map(BackgroundColor)
     };
     El::<NodeBundle>::new()
-        .with_style(|style| {
-            style.width = Val::Px(250.);
-            style.height = BUTTON_HEIGHT;
-            style.border = UiRect::all(Val::Px(5.));
-        })
+        .width(Val::Px(250.))
+        .height(BUTTON_HEIGHT)
+        .with_style(|style| style.border = UiRect::all(Val::Px(5.)))
         .align_content(Align::center())
         .border_color_signal(border_color_signal)
         .background_color_signal(background_color_signal)
@@ -110,17 +114,13 @@ fn button(shape: Shape, selected_shape: Mutable<Shape>, hovered: Mutable<bool>) 
 fn ui_root(world: &mut World) {
     let selected_shape = world.resource::<SelectedShape>().0.clone();
     El::<NodeBundle>::new()
-        .with_style(|style| {
-            style.width = Val::Percent(100.);
-            style.height = Val::Percent(100.);
-        })
+        .width(Val::Percent(100.))
+        .height(Val::Percent(100.))
         .align_content(Align::center())
         .child(
             Stack::<NodeBundle>::new()
-                .with_style(|style| {
-                    style.width = Val::Percent(100.);
-                    style.height = Val::Percent(100.);
-                })
+                .width(Val::Percent(100.))
+                .height(Val::Percent(100.))
                 .layer(
                     Column::<NodeBundle>::new()
                         .align(Align::new().center_y().right())
@@ -133,15 +133,26 @@ fn ui_root(world: &mut World) {
                                 .align(Align::new().top().center_x())
                                 .with_style(|style| {
                                     style.padding.right = Val::Percent(20.);
-                                })
-                                .child(El::<TextBundle>::new().text(Text::from_section(
-                                    "character name",
-                                    TextStyle {
-                                        font_size: 40.0,
-                                        color: Color::WHITE,
-                                        ..default()
-                                    },
-                                ))),
+                                }), /* .child(El::<ButtonBundle>::new().update_raw_el(|raw_el| {
+                                     *     raw_el.with_entity(|world, entity| {
+                                     *         let mut font_system = world.resource_mut::<CosmicFontSystem>();
+                                     *         let mut attrs = bevy_cosmic_edit::Attrs::new();
+                                     *         attrs = attrs.family(bevy_cosmic_edit::Family::Name("Victor Mono"));
+                                     *         attrs = attrs.color(CosmicColor::rgb(0x94, 0x00, 0xD3)); */
+
+                                    /*         let cosmic_edit =
+                                     *             CosmicEditBundle {
+                                     *                 buffer: CosmicBuffer::new(
+                                     *                     &mut font_system,
+                                     *                     bevy_cosmic_edit::Metrics::new(20., 20.),
+                                     *                 )
+                                     *                 .with_rich_text(&mut font_system, vec![("Banana", attrs)],
+                                     * attrs),                 ..default()
+                                     *             };
+                                     *         let cosmic_edit = world.spawn(cosmic_edit).id();
+                                     *         world.entity_mut(entity).insert(CosmicSource(cosmic_edit));
+                                     *     })
+                                     * })), */
                         )
                         .item({
                             let hovereds = MutableVec::new_with_values(
@@ -150,9 +161,7 @@ fn ui_root(world: &mut World) {
                             Column::<NodeBundle>::new()
                                 .height(Val::Px(200.))
                                 .align(Align::new().center_x())
-                                // TODO: hovering must be manually managed when children have their own hover handlers until mouseenter/mouseleave events in mod picking https://discord.com/channels/691052431525675048/1038322714320052304/1240468289512276000
-                                // .scrollable_on_hover(...)
-                                .scrollable(
+                                .scrollable_on_hover(
                                     ScrollabilitySettings {
                                         flex_direction: FlexDirection::Column,
                                         overflow: Overflow::clip_y(),
@@ -161,11 +170,6 @@ fn ui_root(world: &mut World) {
                                             .pixels(20.)
                                             .into(),
                                     },
-                                    hovereds
-                                        .signal_vec_cloned()
-                                        .map_signal(|hovered| hovered.signal())
-                                        .to_signal_map(|hovereds| hovereds.iter().copied().any(identity))
-                                        .dedupe(),
                                 )
                                 .items({
                                     let hovereds = hovereds.lock_ref().into_iter().cloned().collect::<Vec<_>>();

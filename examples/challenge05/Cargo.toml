@@ -8,4 +8,4 @@ publish = false
 haalka = { path = "../../" }
 bevy = "0.13.2"
 strum = { version = "0.26.1", features = ["derive"] }
-bevy_cosmic_edit = "0.16.0"
+bevy_cosmic_edit = "0.20.0"

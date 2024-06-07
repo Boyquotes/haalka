@@ -7,4 +7,3 @@ publish = false
 [dependencies]
 haalka = { path = "../../" }
 bevy = "0.13.2"
-bevy_cosmic_edit = "0.16.0"

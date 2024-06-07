@@ -37,10 +37,8 @@ const FONT_SIZE: f32 = 30.;
 
 fn box_(category: ColorCategory) -> El<NodeBundle> {
     El::<NodeBundle>::new()
-        .with_style(|style| {
-            style.width = Val::Px(BOX_SIZE);
-            style.height = Val::Px(BOX_SIZE);
-        })
+        .width(Val::Px(BOX_SIZE))
+        .height(Val::Px(BOX_SIZE))
         .background_color(
             match category {
                 ColorCategory::Blue => BLUE,
@@ -91,10 +89,8 @@ fn category_count(category: ColorCategory, count: impl Signal<Item = u32> + Send
     labeled_count(
         {
             El::<NodeBundle>::new()
-                .with_style(|style| {
-                    style.width = Val::Px(30.);
-                    style.height = Val::Px(30.);
-                })
+                .width(Val::Px(30.))
+                .height(Val::Px(30.))
                 .background_color(
                     match category {
                         ColorCategory::Blue => BLUE,
@@ -119,7 +115,7 @@ fn incrde_button(value: Mutable<f32>, incr: f32) -> impl Element {
         *value.lock_mut() = new;
     };
     El::<NodeBundle>::new()
-        .with_style(|style| style.width = Val::Px(45.0))
+        .width(Val::Px(45.0))
         .align_content(Align::center())
         .background_color_signal(
             hovered
@@ -213,22 +209,20 @@ fn ui_root(world: &mut World) {
         yellow_count.clone(),
     ]);
     El::<NodeBundle>::new()
-        .with_style(|style| {
-            style.width = Val::Percent(100.);
-            style.height = Val::Percent(100.);
-        })
+    .width(Val::Percent(100.))
+    .height(Val::Percent(100.))
         .child(
             Row::<NodeBundle>::new()
                 .with_style(|style| style.column_gap = Val::Px(50.))
                 .item(
-                    El::<NodeBundle>::new().with_style(|style| {
-                        style.width = Val::Px(HEIGHT);
-                        style.height = Val::Px(HEIGHT);
-                    }), // can't put non ui nodes on top of ui nodes; yes u can https://discord.com/channels/691052431525675048/743663673393938453/1192729978744352858
-                        // Column::<NodeBundle>::new()
-                        // .with_z_index(|z_index| *z_index = ZIndex::Global(1))
-                        // .item(Row::<NodeBundle>::new().item(box_(Category::A)).item(box_(Category::B)))
-                        // .item(Row::<NodeBundle>::new().item(box_(Category::C)).item(box_(Category::D)))
+                    El::<NodeBundle>::new()
+                    .width(Val::Px(HEIGHT))
+                    .height(Val::Px(HEIGHT))
+                    // can't put non ui nodes on top of ui nodes; yes u can https://discord.com/channels/691052431525675048/743663673393938453/1192729978744352858
+                    // Column::<NodeBundle>::new()
+                    // .with_z_index(|z_index| *z_index = ZIndex::Global(1))
+                    // .item(Row::<NodeBundle>::new().item(box_(Category::A)).item(box_(Category::B)))
+                    // .item(Row::<NodeBundle>::new().item(box_(Category::C)).item(box_(Category::D)))
                 )
                 .item(
                     Column::<NodeBundle>::new()
