@@ -117,7 +117,7 @@ impl<NodeType: Bundle> Stack<NodeType> {
 }
 
 impl<NodeType: Bundle> Alignable for Stack<NodeType> {
-    fn alignable_type(&self) -> Option<AlignableType> {
+    fn alignable_type(&mut self) -> Option<AlignableType> {
         Some(AlignableType::Stack)
     }
 

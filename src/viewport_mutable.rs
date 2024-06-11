@@ -19,16 +19,15 @@ pub trait ViewportMutable: Scrollable {
                      mut style_query: Query<&mut Style>,
                      parent_query: Query<&Parent>,
                      node_query: Query<&Node>| {
-                        let Ok(width) = node_query.get(entity).map(|node| node.size().x) else {
-                            return;
+                        if let Ok(width) = node_query.get(entity).map(|node| node.size().x) {
+                            if let Ok(parent) = parent_query.get(entity) {
+                                let container_width = node_query.get(parent.get()).unwrap().size().y;
+                                let max_scroll: f32 = (width - container_width).max(0.);
+                                if let Ok(mut style) = style_query.get_mut(entity) {
+                                    style.left = Val::Px(y.clamp(-max_scroll, 0.));
+                                };
+                            }
                         };
-                        let Ok(parent) = parent_query.get(entity) else { return };
-                        let container_width = node_query.get(parent.get()).unwrap().size().y;
-                        let max_scroll: f32 = (width - container_width).max(0.);
-                        let Ok(mut style) = style_query.get_mut(entity) else {
-                            return;
-                        };
-                        style.left = Val::Px(y.clamp(-max_scroll, 0.));
                     },
                 )
             });
@@ -49,16 +48,15 @@ pub trait ViewportMutable: Scrollable {
                      mut style_query: Query<&mut Style>,
                      parent_query: Query<&Parent>,
                      node_query: Query<&Node>| {
-                        let Ok(height) = node_query.get(entity).map(|node| node.size().y) else {
-                            return;
+                        if let Ok(height) = node_query.get(entity).map(|node| node.size().y) {
+                            if let Ok(parent) = parent_query.get(entity) {
+                                let container_height = node_query.get(parent.get()).unwrap().size().y;
+                                let max_scroll: f32 = (height - container_height).max(0.);
+                                if let Ok(mut style) = style_query.get_mut(entity) {
+                                    style.top = Val::Px(y.clamp(-max_scroll, 0.));
+                                };
+                            }
                         };
-                        let Ok(parent) = parent_query.get(entity) else { return };
-                        let container_height = node_query.get(parent.get()).unwrap().size().y;
-                        let max_scroll: f32 = (height - container_height).max(0.);
-                        let Ok(mut style) = style_query.get_mut(entity) else {
-                            return;
-                        };
-                        style.top = Val::Px(y.clamp(-max_scroll, 0.));
                     },
                 )
             });

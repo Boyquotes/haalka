@@ -5,7 +5,6 @@ use crate::{
 
 pub trait ElementWrapper: Sized {
     type EL: RawElWrapper + Alignable + ChildAlignable;
-    fn element_ref(&self) -> &Self::EL;
     fn element_mut(&mut self) -> &mut Self::EL;
 }
 

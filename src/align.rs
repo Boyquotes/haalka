@@ -113,7 +113,7 @@ pub(crate) fn register_align_signal<REW: RawElWrapper>(
 }
 
 pub trait Alignable: RawElWrapper {
-    fn alignable_type(&self) -> Option<AlignableType> {
+    fn alignable_type(&mut self) -> Option<AlignableType> {
         None
     }
 
@@ -228,8 +228,8 @@ where
 }
 
 impl<EW: ElementWrapper> Alignable for EW {
-    fn alignable_type(&self) -> Option<AlignableType> {
-        self.element_ref().alignable_type()
+    fn alignable_type(&mut self) -> Option<AlignableType> {
+        self.element_mut().alignable_type()
     }
 
     fn align_mut(&mut self) -> &mut Option<AlignHolder> {
@@ -284,7 +284,7 @@ impl RawElWrapper for AlignabilityFacade {
 }
 
 impl Alignable for AlignabilityFacade {
-    fn alignable_type(&self) -> Option<AlignableType> {
+    fn alignable_type(&mut self) -> Option<AlignableType> {
         Some(self.alignable_type)
     }
 

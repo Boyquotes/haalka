@@ -3,8 +3,6 @@ use std::{ops::Not, time::Duration};
 use bevy::prelude::*;
 use haalka::*;
 
-// TODO: always scroll such that the focused element is in view
-
 fn main() {
     App::new()
         .add_plugins((
@@ -57,6 +55,16 @@ static PAIRS: Lazy<MutableVec<RowData>> = Lazy::new(|| {
         ("commodo", "consequat"),
         ("duis", "aute"),
         ("irure", "dolor"),
+        ("in", "reprehenderit"),
+        ("in", "voluptate"),
+        ("velit", "esse"),
+        ("cillum", "dolore"),
+        ("eu", "fugiat"),
+        ("nulla", "pariatur"),
+        ("excepteur", "sint"),
+        ("occaecat", "cupidatat"),
+        ("non", "proident"),
+        ("sunt", "in")
     ]
     .into_iter()
     .collect::<Vec<_>>();
@@ -243,7 +251,7 @@ fn sort_one(mut maybe_changed_events: EventReader<MaybeChanged>) {
                 if key_lock.is_empty().not() {
                     let (Ok(sorted_i) | Err(sorted_i)) =
                         keys.binary_search_by_key(&key_lock.as_str(), |key| key.as_str());
-                    if i != sorted_i {
+                    if i != sorted_i && key_lock.as_str() != keys[sorted_i].as_str() {
                         drop((keys, key_lock));
                         let pair = pairs.remove(i);
                         pairs.insert_cloned(sorted_i, pair);
@@ -261,7 +269,7 @@ fn sort_one(mut maybe_changed_events: EventReader<MaybeChanged>) {
                 if value_lock.is_empty().not() {
                     let (Ok(sorted_i) | Err(sorted_i)) =
                         values.binary_search_by_key(&value_lock.as_str(), |value| value.as_str());
-                    if i != sorted_i {
+                    if i != sorted_i && value_lock.as_str() != values[sorted_i].as_str() {
                         drop((values, value_lock));
                         let pair = pairs.remove(i);
                         pairs.insert_cloned(sorted_i, pair);
@@ -414,10 +422,7 @@ fn scroll_to_bottom() {
     SCROLL_POSITION.set(f32::MIN);
 }
 
-fn tabber(
-    keys: Res<ButtonInput<KeyCode>>,
-    mut focused_widget: ResMut<CosmicFocusedWidget>,
-) {
+fn tabber(keys: Res<ButtonInput<KeyCode>>, mut focused_widget: ResMut<CosmicFocusedWidget>) {
     if keys.pressed(KeyCode::ShiftLeft) && keys.just_pressed(KeyCode::Tab) {
         focused_widget.0 = None; // TODO: shouldn't need this, but text color doesn't sync otherwise https://github.com/Dimchikkk/bevy_cosmic_edit/issues/145
         let pairs = PAIRS.lock_ref();
@@ -475,12 +480,48 @@ fn escaper(keys: Res<ButtonInput<KeyCode>>, mut focused_widget: ResMut<CosmicFoc
 }
 
 // on focus change, check if the focused element is in view, if not, scroll to it
-fn focus_scroller(focused_widget: Res<CosmicFocusedWidget>, cosmic_source_query: Query<(Entity, &Parent, &CosmicSource)>, transform_query: Query<&GlobalTransform>) {
+fn focus_scroller(
+    focused_widget: Res<CosmicFocusedWidget>,
+    cosmic_source_query: Query<(Entity, &CosmicSource)>,
+    data_query: Query<(&Node, &GlobalTransform, &Parent, &mut Style)>,
+) {
     if let Some(focused) = focused_widget.0 {
-        if let Some((node, parent, _)) = cosmic_source_query.iter().find(|(_, _, source)| source.0 == focused) {
-            if let Some((node_transform, parent_transform)) = transform_query.get(node).ok().zip(transform_query.get(parent.get()).ok()) {
-                println!("node: {}", node_transform.translation());
-                println!("parent: {}", parent_transform.translation());
+        if let Some((cosmic_node_entity, _)) = cosmic_source_query.iter().find(|(_, source)| source.0 == focused) {
+            if let Ok((child_node, child_transform, child_parent, _)) = data_query.get(cosmic_node_entity) {
+                // TODO: what is this node ?
+                if let Ok((_, _, child_parent, _)) = data_query.get(child_parent.get()) {
+                    if let Ok((scrollable_node, scrollable_transform, scrollable_container, _)) =
+                        data_query.get(child_parent.get())
+                    {
+                        if let Ok((
+                            scrollable_container_node,
+                            scrollable_container_transform,
+                            _,
+                            scrollable_container_style,
+                        )) = data_query.get(scrollable_container.get())
+                        {
+                            let child_rect = child_node.logical_rect(child_transform);
+                            let scrollable_rect = scrollable_node.logical_rect(scrollable_transform);
+                            let scrollable_container_rect =
+                                scrollable_container_node.logical_rect(scrollable_container_transform);
+                            let scrolled_option = match scrollable_container_style.top {
+                                Val::Px(top) => Some(top),
+                                Val::Auto => Some(0.0),
+                                _ => None,
+                            };
+                            if let Some(scrolled) = scrolled_option {
+                                let container_base = scrollable_container_rect.min.y - scrolled;
+                                let child_offset = child_rect.min.y - scrolled - container_base;
+                                // TODO: is there a simpler/ more general way to check for node visibility ?
+                                if child_offset + INPUT_HEIGHT - scrolled > scrollable_container_rect.height()
+                                    || child_offset < scrolled
+                                {
+                                    SCROLL_POSITION.set(scrollable_rect.min.y - child_rect.min.y);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

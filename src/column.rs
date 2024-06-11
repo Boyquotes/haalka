@@ -113,7 +113,7 @@ impl<NodeType: Bundle> Column<NodeType> {
 }
 
 impl<NodeType: Bundle> Alignable for Column<NodeType> {
-    fn alignable_type(&self) -> Option<AlignableType> {
+    fn alignable_type(&mut self) -> Option<AlignableType> {
         Some(AlignableType::Column)
     }
 

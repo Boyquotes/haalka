@@ -114,7 +114,7 @@ impl<NodeType: Bundle> El<NodeType> {
 }
 
 impl<NodeType: Bundle> Alignable for El<NodeType> {
-    fn alignable_type(&self) -> Option<AlignableType> {
+    fn alignable_type(&mut self) -> Option<AlignableType> {
         Some(AlignableType::El)
     }
 

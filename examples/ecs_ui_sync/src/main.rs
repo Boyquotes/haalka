@@ -39,15 +39,12 @@ fn box_(category: ColorCategory) -> El<NodeBundle> {
     El::<NodeBundle>::new()
         .width(Val::Px(BOX_SIZE))
         .height(Val::Px(BOX_SIZE))
-        .background_color(
-            match category {
-                ColorCategory::Blue => BLUE,
-                ColorCategory::Green => GREEN,
-                ColorCategory::Red => RED,
-                ColorCategory::Yellow => YELLOW,
-            }
-            .into(),
-        )
+        .background_color(BackgroundColor::from(match category {
+            ColorCategory::Blue => BLUE,
+            ColorCategory::Green => GREEN,
+            ColorCategory::Red => RED,
+            ColorCategory::Yellow => YELLOW,
+        }))
         .align(Align::center())
     // .child(El::<TextBundle>::new().text(text(&category.to_string())))
 }
@@ -91,15 +88,12 @@ fn category_count(category: ColorCategory, count: impl Signal<Item = u32> + Send
             El::<NodeBundle>::new()
                 .width(Val::Px(30.))
                 .height(Val::Px(30.))
-                .background_color(
-                    match category {
-                        ColorCategory::Blue => BLUE,
-                        ColorCategory::Green => GREEN,
-                        ColorCategory::Red => RED,
-                        ColorCategory::Yellow => YELLOW,
-                    }
-                    .into(),
-                )
+                .background_color(BackgroundColor::from(match category {
+                    ColorCategory::Blue => BLUE,
+                    ColorCategory::Green => GREEN,
+                    ColorCategory::Red => RED,
+                    ColorCategory::Yellow => YELLOW,
+                }))
                 .align(Align::center())
             // .child(El::<TextBundle>::new().text(text(&category.to_string())))
         },

@@ -79,9 +79,6 @@ impl NineSliceEl {
 
 impl ElementWrapper for NineSliceEl {
     type EL = El<NineSliceUiMaterialBundle>;
-    fn element_ref(&self) -> &Self::EL {
-        &self.0
-    }
     fn element_mut(&mut self) -> &mut Self::EL {
         &mut self.0
     }

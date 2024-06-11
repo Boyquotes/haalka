@@ -25,9 +25,6 @@ pub struct TextInput {
 
 impl ElementWrapper for TextInput {
     type EL = El<ButtonBundle>;
-    fn element_ref(&self) -> &Self::EL {
-        &self.el
-    }
     fn element_mut(&mut self) -> &mut Self::EL {
         &mut self.el
     }
@@ -65,6 +62,7 @@ impl TextInput {
                                   mut focusable_query: Query<&mut Focusable>,
                                   mut commands: Commands| {
                                 // TODO: remove this focusable trigger and uncomment .insert_resource below when https://github.com/Dimchikkk/bevy_cosmic_edit/issues/145
+                                // otherwise cursor position is not instantly correct on `Down`
                                 if let Ok(mut focusable) = focusable_query.get_mut(pointer_down.target) {
                                     focusable.is_focused = true;
                                     commands.run_system_with_input(focusable.system, (true,));

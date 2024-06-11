@@ -72,9 +72,6 @@ struct Button {
 // implementing `ElementWrapper` allows the struct to be passed directly to .child methods
 impl ElementWrapper for Button {
     type EL = El<NodeBundle>;
-    fn element_ref(&self) -> &Self::EL {
-        &self.el
-    }
     fn element_mut(&mut self) -> &mut Self::EL {
         &mut self.el
     }
@@ -283,9 +280,6 @@ impl Checkbox {
 
 impl ElementWrapper for Checkbox {
     type EL = Button;
-    fn element_ref(&self) -> &Self::EL {
-        &self.el
-    }
     fn element_mut(&mut self) -> &mut Self::EL {
         &mut self.el
     }
@@ -388,9 +382,6 @@ impl MutuallyExclusiveOptions {
 
 impl ElementWrapper for MutuallyExclusiveOptions {
     type EL = Row<NodeBundle>;
-    fn element_ref(&self) -> &Self::EL {
-        &self.el
-    }
     fn element_mut(&mut self) -> &mut Self::EL {
         &mut self.el
     }
@@ -517,9 +508,6 @@ impl IterableOptions {
 
 impl ElementWrapper for IterableOptions {
     type EL = Row<NodeBundle>;
-    fn element_ref(&self) -> &Self::EL {
-        &self.el
-    }
     fn element_mut(&mut self) -> &mut Self::EL {
         &mut self.el
     }
@@ -607,9 +595,6 @@ impl Slider {
 
 impl ElementWrapper for Slider {
     type EL = Row<NodeBundle>;
-    fn element_ref(&self) -> &Self::EL {
-        &self.el
-    }
     fn element_mut(&mut self) -> &mut Self::EL {
         &mut self.el
     }
@@ -866,9 +851,6 @@ impl Dropdown {
 
 impl ElementWrapper for Dropdown {
     type EL = El<NodeBundle>;
-    fn element_ref(&self) -> &Self::EL {
-        &self.el
-    }
     fn element_mut(&mut self) -> &mut Self::EL {
         &mut self.el
     }

@@ -122,7 +122,7 @@ impl<NodeType: Bundle> Row<NodeType> {
 }
 
 impl<NodeType: Bundle> Alignable for Row<NodeType> {
-    fn alignable_type(&self) -> Option<AlignableType> {
+    fn alignable_type(&mut self) -> Option<AlignableType> {
         Some(AlignableType::Row)
     }
 
