@@ -39,7 +39,7 @@ fn box_(category: ColorCategory) -> El<NodeBundle> {
     El::<NodeBundle>::new()
         .width(Val::Px(BOX_SIZE))
         .height(Val::Px(BOX_SIZE))
-        .background_color(BackgroundColor::from(match category {
+        .background_color(BackgroundColor(match category {
             ColorCategory::Blue => BLUE,
             ColorCategory::Green => GREEN,
             ColorCategory::Red => RED,
@@ -88,7 +88,7 @@ fn category_count(category: ColorCategory, count: impl Signal<Item = u32> + Send
             El::<NodeBundle>::new()
                 .width(Val::Px(30.))
                 .height(Val::Px(30.))
-                .background_color(BackgroundColor::from(match category {
+                .background_color(BackgroundColor(match category {
                     ColorCategory::Blue => BLUE,
                     ColorCategory::Green => GREEN,
                     ColorCategory::Red => RED,

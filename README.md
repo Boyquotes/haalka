@@ -89,7 +89,7 @@ just example scroll  # scrollability API demo, inspired by https://github.com/mi
 just example scroll_grid  # i can't believe it's not scrolling !
 just example snake  # with adjustable grid size and tick rate
 just example ecs_ui_sync  # forward ecs changes to the ui
-just example key_values_sorted  # text inputs, scrolling, and dynamic lists
+just example key_values_sorted  # text inputs, scrolling/viewport control, and dynamic lists
 # ui challenges from https://github.com/bevyengine/bevy/discussions/11100
 just example challenge01  # game menu
 just example challenge02  # inventory

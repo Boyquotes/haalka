@@ -168,7 +168,7 @@ fn rectangle(index: i32) -> impl Element {
     El::<NodeBundle>::new()
         .width(Val::Px(size as f32))
         .height(Val::Px(size as f32))
-        .background_color(BackgroundColor::from(Color::DARK_GREEN))
+        .background_color(BackgroundColor(Color::DARK_GREEN))
         .align_signal(
             ALIGNMENT
                 .signal()

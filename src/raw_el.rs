@@ -14,7 +14,7 @@ use futures_signals::{
 use futures_signals_ext::*;
 use futures_util::Future;
 
-use crate::{async_world, node_builder::TaskHolder, spawn, NodeBuilder};
+use crate::{async_world, node_builder::TaskHolder, spawn, NodeBuilder, UiRoot};
 
 pub struct RawHaalkaEl {
     pub(crate) node_builder: Option<NodeBuilder>,
@@ -51,6 +51,7 @@ impl RawHaalkaEl {
     }
 
     // force updates to be in the back of the line, with some crude ordering
+    // TODO: allow attaching some sortable data to unlimit ordering options
     pub fn defer_update(
         mut self,
         append_direction: AppendDirection,
@@ -190,7 +191,24 @@ impl RawHaalkaEl {
         self.on_event_propagation_stoppable::<E>(handler, always(true))
     }
 
-    // TODO: global event listeners, e.g. for on_click_outside
+    // global in relation to the ui root
+    pub fn on_global_event_with_system<E: EntityEvent, Marker>(
+        self,
+        handler: impl IntoSystem<(), (), Marker> + Send + 'static,
+    ) -> Self {
+        self.insert_forwarded(ui_root_forwarder, On::<E>::run(handler))
+    }
+
+    pub fn on_global_event<E: EntityEvent>(self, mut handler: impl FnMut(Listener<E>) + Send + Sync + 'static) -> Self {
+        self.on_global_event_with_system::<E, _>(move |event: Listener<E>| handler(event))
+    }
+
+    pub fn on_global_event_mut<E: EntityEvent>(
+        self,
+        mut handler: impl FnMut(ListenerMut<E>) + Send + Sync + 'static,
+    ) -> Self {
+        self.on_global_event_with_system::<E, _>(move |event: ListenerMut<E>| handler(event))
+    }
 
     pub fn on_signal<T, Fut: Future<Output = ()> + Send + 'static>(
         self,
@@ -455,6 +473,10 @@ impl RawHaalkaEl {
             }
         })
     }
+}
+
+fn ui_root_forwarder(entity: &mut EntityWorldMut) -> Option<Entity> {
+    entity.world_scope(|world| world.get_resource::<UiRoot>().map(|&UiRoot(ui_root)| ui_root))
 }
 
 // struct OnRemove(Vec<Box<dyn FnOnce(&mut World, Entity) + Send + Sync + 'static>>);

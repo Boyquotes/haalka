@@ -338,7 +338,7 @@ fn cell(cell_data_option: Mutable<Option<CellData>>, insertable: bool) -> impl E
             hovered.signal()
                 .map_bool(|| CELL_HIGHLIGHT_COLOR.into(), || CELL_BACKGROUND_COLOR.into()),
         )
-        .border_color(BorderColor::from(CELL_DARK_BORDER_COLOR))
+        .border_color(BorderColor(CELL_DARK_BORDER_COLOR))
         .child_signal(
             cell_data_option
                 .signal_cloned()
@@ -375,8 +375,8 @@ fn cell(cell_data_option: Mutable<Option<CellData>>, insertable: bool) -> impl E
                                     })
                                 }))
                                 .z_index(ZIndex::Global(1))
-                                .background_color(BackgroundColor::from(CELL_BACKGROUND_COLOR))
-                                .border_color(BorderColor::from(CELL_DARK_BORDER_COLOR))
+                                .background_color(BackgroundColor(CELL_BACKGROUND_COLOR))
+                                .border_color(BorderColor(CELL_DARK_BORDER_COLOR))
                                 .child(
                                     El::<TextBundle>::new()
                                     .align(Align::center())
@@ -452,7 +452,7 @@ fn dot() -> impl Element {
     El::<NodeBundle>::new()
         .width(Val::Px(CELL_BORDER_WIDTH * 2.))
         .height(Val::Px(CELL_BORDER_WIDTH * 2.))
-        .background_color(BackgroundColor::from(CELL_BACKGROUND_COLOR))
+        .background_color(BackgroundColor(CELL_BACKGROUND_COLOR))
 }
 
 fn dot_row(n: usize) -> impl Element {
@@ -482,7 +482,7 @@ fn inventory() -> impl Element {
             .height(Val::Percent(100.))
             .width(Val::Percent(100.))
                 .with_style(|style| style.row_gap = Val::Px(CELL_GAP * 4.))
-                .background_color(BackgroundColor::from(INVENTORY_BACKGROUND_COLOR))
+                .background_color(BackgroundColor(INVENTORY_BACKGROUND_COLOR))
                 .align_content(Align::center())
                 .item(
                     Row::<NodeBundle>::new()
@@ -501,7 +501,7 @@ fn inventory() -> impl Element {
                                     El::<NodeBundle>::new()
                                         .height(Val::Px(CELL_WIDTH * 4. + CELL_GAP * 3.))
                                         .width(Val::Percent(100.))
-                                        .background_color(BackgroundColor::from(Color::BLACK)),
+                                        .background_color(BackgroundColor(Color::BLACK)),
                                 )
                                 .item(side_column())
                         )

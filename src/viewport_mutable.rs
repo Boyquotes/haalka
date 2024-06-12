@@ -14,7 +14,7 @@ pub trait ViewportMutable: Scrollable {
             self = self.update_raw_el(|raw_el| {
                 raw_el.on_signal_one_shot(
                     x_signal,
-                    |In((entity, y)): In<(Entity, f32)>,
+                    |In((entity, x)): In<(Entity, f32)>,
                      // TODO: combining these queries might be better?
                      mut style_query: Query<&mut Style>,
                      parent_query: Query<&Parent>,
@@ -24,7 +24,7 @@ pub trait ViewportMutable: Scrollable {
                                 let container_width = node_query.get(parent.get()).unwrap().size().y;
                                 let max_scroll: f32 = (width - container_width).max(0.);
                                 if let Ok(mut style) = style_query.get_mut(entity) {
-                                    style.left = Val::Px(y.clamp(-max_scroll, 0.));
+                                    style.left = Val::Px(x.clamp(-max_scroll, 0.));
                                 };
                             }
                         };

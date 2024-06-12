@@ -64,7 +64,7 @@ static PAIRS: Lazy<MutableVec<RowData>> = Lazy::new(|| {
         ("excepteur", "sint"),
         ("occaecat", "cupidatat"),
         ("non", "proident"),
-        ("sunt", "in")
+        ("sunt", "in"),
     ]
     .into_iter()
     .collect::<Vec<_>>();
@@ -141,14 +141,14 @@ fn text_input(
         )
         .attrs(TextAttrs::new().color_signal(focus.signal().map_bool(|| Color::WHITE, || Color::BLACK).map(Some)))
         .focus_signal(focus.signal())
-        .on_focused_change(move |is_focused| {
+        .on_focused_change(clone!((focus) move |is_focused| {
             if !is_focused {
                 if let Some(index) = index_option.get() {
                     async_world().send_event(MaybeChanged(index)).apply(spawn).detach();
                 }
             }
             focus.set_neq(is_focused);
-        })
+        }))
         .text_signal(string.signal_cloned())
         .on_change_sync(string)
 }
@@ -280,7 +280,7 @@ fn sort_one(mut maybe_changed_events: EventReader<MaybeChanged>) {
     }
 }
 
-static SCROLL_POSITION: Lazy<Mutable<f32>> = Lazy::new(|| Mutable::new(0.));
+static SCROLL_POSITION: Lazy<Mutable<f32>> = Lazy::new(default);
 
 fn key_values() -> impl Element + Sizeable {
     Column::<NodeBundle>::new()
@@ -352,6 +352,7 @@ fn x_button() -> impl Element + PointerEventAware {
 
 fn ui_root(world: &mut World) {
     El::<NodeBundle>::new()
+        .ui_root() // required if we want `on_click_outside` functions to behave correctly
         .width(Val::Percent(100.))
         .height(Val::Percent(100.))
         .align_content(Align::center())
@@ -437,8 +438,8 @@ fn tabber(keys: Res<ButtonInput<KeyCode>>, mut focused_widget: ResMut<CosmicFocu
                 pairs[focused].key.focus.set(false);
                 if focused > 0 {
                     pairs[focused - 1].value.focus.set(true);
-                } else {
-                    pairs.last().unwrap().value.focus.set(true);
+                } else if let Some(last) = pairs.last() {
+                    last.value.focus.set(true);
                 }
             }
         } else {
@@ -460,8 +461,8 @@ fn tabber(keys: Res<ButtonInput<KeyCode>>, mut focused_widget: ResMut<CosmicFocu
                 pairs[focused].value.focus.set(false);
                 if focused + 1 < pairs.len() {
                     pairs[focused + 1].key.focus.set(true);
-                } else {
-                    pairs[0].key.focus.set(true);
+                } else if let Some(first) = pairs.first() {
+                    first.key.focus.set(true);
                 }
             }
         } else {

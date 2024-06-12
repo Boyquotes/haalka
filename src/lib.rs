@@ -9,7 +9,7 @@ mod raw_el;
 pub use raw_el::{IntoOptionRawElement, IntoRawElement, RawElWrapper, RawElement, RawHaalkaEl, Spawnable};
 
 mod element;
-pub use element::{Element, ElementWrapper, IntoElement, IntoOptionElement, TypeEraseable};
+pub use element::{Element, ElementWrapper, IntoElement, IntoOptionElement, TypeEraseable, UiRoot, UiRootable};
 
 mod el;
 pub use el::El;

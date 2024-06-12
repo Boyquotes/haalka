@@ -35,10 +35,6 @@ impl Scrollable for TextInput {}
 impl Sizeable for TextInput {}
 impl ViewportMutable for TextInput {}
 
-fn cosmic_edit_entity_forwarder(entity: &mut EntityWorldMut) -> Option<Entity> {
-    entity.get::<CosmicSource>().map(|cosmic_source| cosmic_source.0)
-}
-
 // TODO: allow managing multiple spans reactively
 impl TextInput {
     pub fn new() -> Self {
@@ -198,7 +194,7 @@ impl TextInput {
     }
 
     pub fn on_focused_change(self, mut handler: impl FnMut(bool) + Send + Sync + 'static) -> Self {
-        self.on_focused_change_with_system(move |In((is_focused,)): In<(bool,)>| handler(is_focused))
+        self.on_focused_change_with_system(move |In((is_focused,))| handler(is_focused))
     }
 
     pub fn focused_sync(self, focused: Mutable<bool>) -> Self {
@@ -586,6 +582,10 @@ impl TextInput {
     }
 }
 
+fn cosmic_edit_entity_forwarder(entity: &mut EntityWorldMut) -> Option<Entity> {
+    entity.get::<CosmicSource>().map(|cosmic_source| cosmic_source.0)
+}
+
 fn set_text_attrs(cosmic_buffer: &mut CosmicBuffer, font_system: &mut FontSystem, attrs: bevy_cosmic_edit::AttrsOwned) {
     let spans = cosmic_buffer.get_text_spans(attrs.clone());
     if let Some(list_spans) = spans.first() {
@@ -789,6 +789,37 @@ pub struct PlaceHolder {
     attrs: Option<TextAttrs>,
 }
 
+impl PlaceHolder {
+    pub fn new() -> Self {
+        Self {
+            text: None,
+            attrs: None,
+        }
+    }
+
+    pub fn text_signal<S: Signal<Item = &'static str> + Send + 'static>(
+        mut self,
+        text_signal_option: impl Into<Option<S>>,
+    ) -> Self {
+        if let Some(text_signal) = text_signal_option.into() {
+            self.text = Some(Box::pin(text_signal));
+        }
+        self
+    }
+
+    pub fn text(mut self, text_option: impl Into<Option<&'static str>>) -> Self {
+        if let Some(text) = text_option.into() {
+            self = self.text_signal(always(text));
+        }
+        self
+    }
+
+    pub fn attrs(mut self, attrs_option: impl Into<Option<TextAttrs>>) -> Self {
+        self.attrs = attrs_option.into();
+        self
+    }
+}
+
 macro_rules! impl_text_input_cosmic_edit_methods {
     ($($field:ident: $field_type:ty),+ $(,)?) => {
         paste::paste! {
@@ -851,6 +882,7 @@ impl Plugin for TextInputPlugin {
                 (
                     on_change.run_if(any_with_component::<TextInputOnChange>.and_then(on_event::<CosmicTextChanged>())),
                     on_focus_changed.run_if(resource_changed::<CosmicFocusedWidget>),
+                    bevy_cosmic_edit::deselect_editor_on_esc,
                 )
                     .run_if(any_with_component::<CosmicSource>),
             );

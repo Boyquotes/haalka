@@ -7,20 +7,11 @@
 // Changing the selection in the UI changes the 3D shapes in the 3D scene.
 // On the top of the UI is a text field for the character name.
 
-use std::convert::identity;
-
 use bevy::prelude::*;
 use haalka::*;
 use strum::{self, IntoEnumIterator};
 
 fn main() {
-    let selected_shape = Mutable::new(Shape::Cuboid);
-    let font_bytes: &[u8] = include_bytes!("../assets/fonts/VictorMono-Regular.ttf");
-    // let font_config = CosmicFontConfig {
-    //     fonts_dir_path: None,
-    //     font_bytes: Some(vec![font_bytes]),
-    //     load_system_fonts: true,
-    // };
     App::new()
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
@@ -33,13 +24,13 @@ fn main() {
             HaalkaPlugin,
         ))
         .add_systems(Startup, (setup, ui_root).chain())
-        .insert_resource(SelectedShape(selected_shape))
         .run();
 }
 
 const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
 const CLICKED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
+const BUTTON_WIDTH: Val = Val::Px(250.);
 const BUTTON_HEIGHT: Val = Val::Px(65.);
 
 #[derive(Clone, Copy, PartialEq, strum::Display, strum::EnumIter)]
@@ -53,11 +44,11 @@ enum Shape {
     Torus,
 }
 
-#[derive(Resource)]
-struct SelectedShape(Mutable<Shape>);
+static SELECTED_SHAPE: Lazy<Mutable<Shape>> = Lazy::new(|| Mutable::new(Shape::Cuboid));
+static SCROLL_POSITION: Lazy<Mutable<f32>> = Lazy::new(default);
 
-fn button(shape: Shape, selected_shape: Mutable<Shape>, hovered: Mutable<bool>) -> impl Element {
-    let selected = selected_shape.signal().eq(shape);
+fn button(shape: Shape, hovered: Mutable<bool>) -> impl Element {
+    let selected = SELECTED_SHAPE.signal().eq(shape);
     let (pressed, pressed_signal) = Mutable::new_and_signal(false);
     let hovered_signal = hovered.signal();
     let selected_hovered_broadcaster =
@@ -92,7 +83,7 @@ fn button(shape: Shape, selected_shape: Mutable<Shape>, hovered: Mutable<bool>) 
             .map(BackgroundColor)
     };
     El::<NodeBundle>::new()
-        .width(Val::Px(250.))
+        .width(BUTTON_WIDTH)
         .height(BUTTON_HEIGHT)
         .with_style(|style| style.border = UiRect::all(Val::Px(5.)))
         .align_content(Align::center())
@@ -100,7 +91,7 @@ fn button(shape: Shape, selected_shape: Mutable<Shape>, hovered: Mutable<bool>) 
         .background_color_signal(background_color_signal)
         .hovered_sync(hovered)
         .pressed_sync(pressed)
-        .on_click(move || selected_shape.set_neq(shape))
+        .on_click(move || SELECTED_SHAPE.set_neq(shape))
         .child(El::<TextBundle>::new().text(Text::from_section(
             shape.to_string(),
             TextStyle {
@@ -112,7 +103,6 @@ fn button(shape: Shape, selected_shape: Mutable<Shape>, hovered: Mutable<bool>) 
 }
 
 fn ui_root(world: &mut World) {
-    let selected_shape = world.resource::<SelectedShape>().0.clone();
     El::<NodeBundle>::new()
         .width(Val::Percent(100.))
         .height(Val::Percent(100.))
@@ -128,32 +118,35 @@ fn ui_root(world: &mut World) {
                             style.padding.right = Val::Percent(20.);
                             style.row_gap = Val::Px(20.);
                         })
-                        .item(
-                            El::<NodeBundle>::new()
-                                .align(Align::new().top().center_x())
-                                .with_style(|style| {
-                                    style.padding.right = Val::Percent(20.);
-                                }), /* .child(El::<ButtonBundle>::new().update_raw_el(|raw_el| {
-                                     *     raw_el.with_entity(|world, entity| {
-                                     *         let mut font_system = world.resource_mut::<CosmicFontSystem>();
-                                     *         let mut attrs = bevy_cosmic_edit::Attrs::new();
-                                     *         attrs = attrs.family(bevy_cosmic_edit::Family::Name("Victor Mono"));
-                                     *         attrs = attrs.color(CosmicColor::rgb(0x94, 0x00, 0xD3)); */
-
-                                    /*         let cosmic_edit =
-                                     *             CosmicEditBundle {
-                                     *                 buffer: CosmicBuffer::new(
-                                     *                     &mut font_system,
-                                     *                     bevy_cosmic_edit::Metrics::new(20., 20.),
-                                     *                 )
-                                     *                 .with_rich_text(&mut font_system, vec![("Banana", attrs)],
-                                     * attrs),                 ..default()
-                                     *             };
-                                     *         let cosmic_edit = world.spawn(cosmic_edit).id();
-                                     *         world.entity_mut(entity).insert(CosmicSource(cosmic_edit));
-                                     *     })
-                                     * })), */
-                        )
+                        .item({
+                            let focused = Mutable::new(false);
+                            let name = Mutable::new(String::new());
+                            let name_shape_syncer = name.signal_cloned().for_each_sync(|name| {
+                                if let Some((i, shape)) = Shape::iter().enumerate().find(|(_, shape)| shape.to_string() == name) {
+                                    SELECTED_SHAPE.set_neq(shape);
+                                    if let Val::Px(height) = BUTTON_HEIGHT {
+                                        SCROLL_POSITION.set_neq(i as f32 * -height);
+                                    }
+                                }
+                            });
+                            TextInput::new()
+                                .update_raw_el(move |raw_el| raw_el.hold_tasks([spawn(name_shape_syncer)]))
+                                .width(BUTTON_WIDTH)
+                                .height(Val::Px(40.))
+                                .mode(CosmicWrap::InfiniteLine)
+                                .scroll_disabled()
+                                .cursor_color(CursorColor(Color::WHITE))
+                                .fill_color(CosmicBackgroundColor(NORMAL_BUTTON))
+                                .attrs(TextAttrs::new().color(Color::WHITE))
+                                .placeholder(
+                                    PlaceHolder::new()
+                                        .text("name")
+                                        .attrs(TextAttrs::new().color(Color::GRAY)),
+                                )
+                                .focus_signal(focused.signal())
+                                .focused_sync(focused)
+                                .on_change_sync(name)
+                        })
                         .item({
                             let hovereds = MutableVec::new_with_values(
                                 (0..Shape::iter().count()).map(|_| Mutable::new(false)).collect(),
@@ -161,21 +154,20 @@ fn ui_root(world: &mut World) {
                             Column::<NodeBundle>::new()
                                 .height(Val::Px(200.))
                                 .align(Align::new().center_x())
-                                .scrollable_on_hover(
-                                    ScrollabilitySettings {
-                                        flex_direction: FlexDirection::Column,
-                                        overflow: Overflow::clip_y(),
-                                        scroll_handler: BasicScrollHandler::new()
-                                            .direction(ScrollDirection::Vertical)
-                                            .pixels(20.)
-                                            .into(),
-                                    },
-                                )
+                                .scrollable_on_hover(ScrollabilitySettings {
+                                    flex_direction: FlexDirection::Column,
+                                    overflow: Overflow::clip_y(),
+                                    scroll_handler: BasicScrollHandler::new()
+                                        .direction(ScrollDirection::Vertical)
+                                        .pixels(20.)
+                                        .into(),
+                                })
+                                .viewport_y_signal(SCROLL_POSITION.signal())
                                 .items({
                                     let hovereds = hovereds.lock_ref().into_iter().cloned().collect::<Vec<_>>();
                                     Shape::iter()
                                         .zip(hovereds)
-                                        .map(move |(shape, hovered)| button(shape, selected_shape.clone(), hovered))
+                                        .map(move |(shape, hovered)| button(shape, hovered))
                                 })
                         }),
                 ),
@@ -183,8 +175,8 @@ fn ui_root(world: &mut World) {
         .spawn(world);
 }
 
-fn setup(mut commands: Commands, mut materials: ResMut<Assets<StandardMaterial>>, selected_shape: Res<SelectedShape>) {
-    spawn(selected_shape.0.signal().for_each(|shape| {
+fn setup(mut commands: Commands, mut materials: ResMut<Assets<StandardMaterial>>) {
+    spawn(SELECTED_SHAPE.signal().for_each(|shape| {
         async_world().apply(move |world: &mut World| {
             let mut meshes = world.resource_mut::<Assets<Mesh>>();
             *world.query::<&mut Handle<Mesh>>().single_mut(world) = meshes.add(match shape {

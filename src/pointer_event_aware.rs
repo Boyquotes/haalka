@@ -89,6 +89,31 @@ pub trait PointerEventAware: RawElWrapper {
         })
     }
 
+    // TODO: this doesn't make sense until the event listener supports registering multiple listeners per event
+    // fn on_click_outside_event(self, mut handler: impl FnMut(&Pointer<Click>) + Send + Sync + 'static) -> Self {
+    //     self.update_raw_el(|raw_el| {
+    //         let entity_holder = Mutable::new(None);
+    //         raw_el
+    //             .on_spawn(clone!((entity_holder) move |_, entity| entity_holder.set(Some(entity))))
+    //             .on_global_event_with_system::<Pointer<Click>, _>(
+    //                 move |click: Listener<Pointer<Click>>, children_query: Query<&Children>| {
+    //                     if !is_inside_or_removed_from_dom(
+    //                         entity_holder.get().unwrap(),
+    //                         &click,
+    //                         click.listener(),
+    //                         &children_query,
+    //                     ) {
+    //                         handler(&*click);
+    //                     }
+    //                 },
+    //             )
+    //     })
+    // }
+
+    // fn on_click_outside(self, mut handler: impl FnMut() + Send + Sync + 'static) -> Self {
+    //     self.on_click_outside_event(move |_| handler())
+    // }
+
     fn on_pressed_change_blockable_with_system<Marker>(
         self,
         handler: impl IntoSystem<(Entity, bool), (), Marker> + Send + 'static,
@@ -98,8 +123,8 @@ pub trait PointerEventAware: RawElWrapper {
             let down = Mutable::new(false);
             let system_holder = Mutable::new(None);
             raw_el
-                .with_entity(clone!((system_holder) move |mut entity| {
-                    let system = entity.world_scope(|world| world.register_system(handler));
+                .on_spawn(clone!((system_holder) move |world, _| {
+                    let system = world.register_system(handler);
                     system_holder.set(Some(system));
                 }))
                 .component_signal::<Pressable, _>(
@@ -238,6 +263,27 @@ fn pressable_system(
             (entity, matches!(interaction, PickingInteraction::Pressed)),
         );
     }
+}
+
+fn contains(left: Entity, right: Entity, children_query: &Query<&Children>) -> bool {
+    children_query.iter_descendants(left).any(|e| e == right)
+}
+
+// TODO: add support for some sort of exclusion
+fn is_inside_or_removed_from_dom(
+    element: Entity,
+    event: &Listener<Pointer<Click>>,
+    ui_root: Entity,
+    children_query: &Query<&Children>,
+) -> bool {
+    let target = event.target();
+    if contains(element, target, children_query) {
+        return true;
+    }
+    if !contains(ui_root, target, children_query) {
+        return true;
+    }
+    false
 }
 
 /// TODO: requires being able to register multipe callbacks for the same event type in event
