@@ -122,7 +122,9 @@ fn ui_root(world: &mut World) {
                             let focused = Mutable::new(false);
                             let name = Mutable::new(String::new());
                             let name_shape_syncer = name.signal_cloned().for_each_sync(|name| {
-                                if let Some((i, shape)) = Shape::iter().enumerate().find(|(_, shape)| shape.to_string() == name) {
+                                if let Some((i, shape)) =
+                                    Shape::iter().enumerate().find(|(_, shape)| shape.to_string() == name)
+                                {
                                     SELECTED_SHAPE.set_neq(shape);
                                     if let Val::Px(height) = BUTTON_HEIGHT {
                                         SCROLL_POSITION.set_neq(i as f32 * -height);

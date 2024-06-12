@@ -89,9 +89,9 @@ pub trait PointerEventAware: RawElWrapper {
         })
     }
 
-    // TODO: this doesn't make sense until the event listener supports registering multiple listeners per event
-    // fn on_click_outside_event(self, mut handler: impl FnMut(&Pointer<Click>) + Send + Sync + 'static) -> Self {
-    //     self.update_raw_el(|raw_el| {
+    // TODO: this doesn't make sense until the event listener supports registering multiple listeners
+    // per event fn on_click_outside_event(self, mut handler: impl FnMut(&Pointer<Click>) + Send +
+    // Sync + 'static) -> Self {     self.update_raw_el(|raw_el| {
     //         let entity_holder = Mutable::new(None);
     //         raw_el
     //             .on_spawn(clone!((entity_holder) move |_, entity| entity_holder.set(Some(entity))))
