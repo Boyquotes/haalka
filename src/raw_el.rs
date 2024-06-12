@@ -153,12 +153,12 @@ impl RawHaalkaEl {
         handler: impl IntoSystem<(), (), Marker> + Send + 'static,
         disabled: impl Signal<Item = bool> + Send + 'static,
     ) -> Self {
-        let handler = Arc::new(Mutex::new(Some(On::<E>::run(handler))));
+        let handler_holder = Mutable::new(Some(On::<E>::run(handler)));
         self.on_signal_with_entity(disabled.dedupe(), move |mut entity, disabled| {
             if disabled {
-                *handler.lock().unwrap() = entity.take::<On<E>>();
+                handler_holder.set(entity.take::<On<E>>());
             } else {
-                entity.insert(handler.lock().unwrap().take().unwrap());
+                entity.insert(handler_holder.lock_mut().take().unwrap());
             }
         })
     }
