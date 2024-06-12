@@ -169,13 +169,19 @@ impl TextInput {
         self
     }
 
-    pub fn text_signal(self, text_signal: impl Signal<Item = impl Into<Option<String>>> + Send + 'static) -> Self {
-        self.on_signal_with_cosmic_buffer(
-            text_signal.map(|text_option| text_option.into()),
-            |cosmic_buffer, font_system, attrs, text_option| {
-                cosmic_buffer.set_text(font_system, &text_option.unwrap_or_default(), attrs.0.as_attrs());
-            },
-        )
+    pub fn text_signal<S: Signal<Item = impl Into<Option<String>>> + Send + 'static>(
+        mut self,
+        text_option_signal_option: impl Into<Option<S>>,
+    ) -> Self {
+        if let Some(text_option_signal) = text_option_signal_option.into() {
+            self = self.on_signal_with_cosmic_buffer(
+                text_option_signal.map(|text_option| text_option.into()),
+                |cosmic_buffer, font_system, attrs, text_option| {
+                    cosmic_buffer.set_text(font_system, &text_option.unwrap_or_default(), attrs.0.as_attrs());
+                },
+            );
+        }
+        self
     }
 
     pub fn on_focused_change_with_system<Marker>(
