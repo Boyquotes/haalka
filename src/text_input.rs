@@ -882,9 +882,9 @@ impl Plugin for TextInputPlugin {
                 (
                     on_change.run_if(any_with_component::<TextInputOnChange>.and_then(on_event::<CosmicTextChanged>())),
                     on_focus_changed.run_if(resource_changed::<CosmicFocusedWidget>),
-                    bevy_cosmic_edit::deselect_editor_on_esc,
                 )
                     .run_if(any_with_component::<CosmicSource>),
-            );
+            )
+            .add_systems(PostUpdate, bevy_cosmic_edit::deselect_editor_on_esc);
     }
 }

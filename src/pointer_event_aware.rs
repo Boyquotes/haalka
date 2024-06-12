@@ -89,7 +89,7 @@ pub trait PointerEventAware: RawElWrapper {
         })
     }
 
-    // TODO: this doesn't make sense until the event listener supports registering multiple listeners
+    // TODO: this doesn't make sense until the event listener supports registering multiple listeners https://discord.com/channels/691052431525675048/1236111180624297984/1250245547756093465
     // per event fn on_click_outside_event(self, mut handler: impl FnMut(&Pointer<Click>) + Send +
     // Sync + 'static) -> Self {     self.update_raw_el(|raw_el| {
     //         let entity_holder = Mutable::new(None);
@@ -265,26 +265,27 @@ fn pressable_system(
     }
 }
 
-fn contains(left: Entity, right: Entity, children_query: &Query<&Children>) -> bool {
-    children_query.iter_descendants(left).any(|e| e == right)
-}
+// TODO: used in on_click_outside_event, but requires being able to register multiple handlers per event https://discord.com/channels/691052431525675048/1236111180624297984/1250245547756093465
+// fn contains(left: Entity, right: Entity, children_query: &Query<&Children>) -> bool {
+//     children_query.iter_descendants(left).any(|e| e == right)
+// }
 
-// TODO: add support for some sort of exclusion
-fn is_inside_or_removed_from_dom(
-    element: Entity,
-    event: &Listener<Pointer<Click>>,
-    ui_root: Entity,
-    children_query: &Query<&Children>,
-) -> bool {
-    let target = event.target();
-    if contains(element, target, children_query) {
-        return true;
-    }
-    if !contains(ui_root, target, children_query) {
-        return true;
-    }
-    false
-}
+// // TODO: add support for some sort of exclusion
+// fn is_inside_or_removed_from_dom(
+//     element: Entity,
+//     event: &Listener<Pointer<Click>>,
+//     ui_root: Entity,
+//     children_query: &Query<&Children>,
+// ) -> bool {
+//     let target = event.target();
+//     if contains(element, target, children_query) {
+//         return true;
+//     }
+//     if !contains(ui_root, target, children_query) {
+//         return true;
+//     }
+//     false
+// }
 
 /// TODO: requires being able to register multipe callbacks for the same event type in event
 /// listener, since otherwise would overwrite any other on hovered listeners

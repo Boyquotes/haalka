@@ -240,6 +240,7 @@ fn sort_one(mut maybe_changed_events: EventReader<MaybeChanged>) {
             return;
         };
         match SORT_BY.get() {
+            // TODO: dry
             KeyValue::Key => {
                 let keys = pairs
                     .iter()
@@ -313,6 +314,10 @@ fn key_values() -> impl Element + Sizeable {
             )| {
                 Row::<NodeBundle>::new()
                     .with_style(|style| style.column_gap = Val::Px(10.))
+                    // without registering width up front, layout will take a frame or two to sync to size of children,
+                    // making it look like the elements are expanding into place, try commenting out this line to see
+                    // how it looks
+                    .width(Val::Px(INPUT_WIDTH * 2. + INPUT_HEIGHT + 10. * 2.))
                     .item(text_input(index_option.clone(), key, key_focus))
                     .item(text_input(index_option.clone(), value, value_focus))
                     .item(x_button().on_click(move || {
